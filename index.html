@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>대구 키다리용달</title>
+<meta name="description" content="대구 달서구 키다리용달 · 소형이사 · 원룸이사 · 가구/가전 분해조립 · 폐가구 운반 · 리프트 장착 차량 · 365일 심야 가능 · 010-7574-8586">
+<meta property="og:title" content="대구 키다리용달 · 010-7574-8586">
+<meta property="og:description" content="소형이사 · 원룸이사 · 가구/가전 분해조립 · 폐가구 운반 · 리프트 장착 차량. 당근 후기 615개 평점 4.9">
+<meta name="theme-color" content="#1b1f2a">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root{
+    --bg:#f3efe7; --card:#ffffff; --ink:#1b1f2a; --sub:#5d6270; --line:#e6e0d4;
+    --accent:#f2a516; --accent-ink:#1b1f2a; --dark:#1b1f2a; --dark-ink:#ffffff;
+    --chip:#faf6ee;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    line-height:1.5; min-height:100vh;
+  }
+  .wrap{max-width:480px;margin:0 auto;padding:28px 16px 120px}
+
+  /* 프로필 */
+  .profile{text-align:center;padding:12px 0 20px}
+  .avatar{
+    width:104px;height:104px;border-radius:50%;margin:0 auto 14px;
+    background:var(--dark);display:grid;place-items:center;
+    box-shadow:0 0 0 4px var(--bg),0 0 0 6px var(--accent);
+  }
+  .avatar svg{width:56px;height:80px}
+  h1{font-size:26px;font-weight:800;letter-spacing:-.5px}
+  .tag{color:var(--sub);font-size:14px;margin-top:4px}
+  .car{display:inline-block;margin-top:10px;font-size:12px;color:var(--sub);
+       border:1px solid var(--line);border-radius:999px;padding:3px 10px;background:var(--card)}
+
+  /* 평점 */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0 18px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 6px;text-align:center}
+  .stat b{display:block;font-size:20px;font-weight:800}
+  .stat span{font-size:12px;color:var(--sub)}
+  .star{color:var(--accent)}
+
+  /* 버튼 */
+  .btn{
+    display:flex;align-items:center;gap:12px;width:100%;
+    background:var(--card);color:var(--ink);text-decoration:none;
+    border:1px solid var(--line);border-radius:16px;padding:15px 16px;margin-bottom:10px;
+    font-size:16px;font-weight:700;transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .btn:active{transform:scale(.98)}
+  .btn:hover{box-shadow:0 4px 14px rgba(27,31,42,.08)}
+  .btn .ic{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;flex:none;font-size:18px}
+  .btn .tx{flex:1;min-width:0}
+  .btn small{display:block;font-size:12px;font-weight:500;color:var(--sub);margin-top:1px}
+  .btn .arr{color:var(--sub);font-size:18px}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+  .btn.primary small{color:#5a3f05}
+  .btn.primary .ic{background:rgba(255,255,255,.45)}
+  .btn.dark{background:var(--dark);border-color:var(--dark);color:var(--dark-ink)}
+  .btn.dark small{color:#b9bdc8}
+  .btn.dark .ic{background:rgba(255,255,255,.12)}
+
+  .sec{margin-top:26px}
+  .sec h2{font-size:15px;font-weight:800;margin:0 4px 10px;display:flex;align-items:center;gap:6px}
+
+  /* 서비스 */
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:8px 13px;font-size:14px;font-weight:600}
+  .note{background:var(--chip);border:1px dashed var(--line);border-radius:14px;padding:12px 14px;font-size:14px;color:var(--sub);margin-top:10px}
+
+  /* 가격 */
+  .price{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+  .row{display:flex;justify-content:space-between;gap:12px;padding:13px 16px;border-top:1px solid var(--line)}
+  .row:first-child{border-top:0}
+  .row .n{font-weight:700;font-size:15px}
+  .row .d{font-size:12px;color:var(--sub);margin-top:2px}
+  .row .p{font-weight:800;white-space:nowrap;font-size:15px}
+  .fine{font-size:12px;color:var(--sub);margin:8px 4px 0}
+
+  /* 후기 */
+  .rv{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin-bottom:10px}
+  .rv .top{display:flex;justify-content:space-between;font-size:12px;color:var(--sub);margin-bottom:6px}
+  .rv p{font-size:14px}
+
+  footer{text-align:center;color:var(--sub);font-size:12px;margin-top:30px}
+
+  /* 하단 고정 전화 */
+  .sticky{
+    position:fixed;left:0;right:0;bottom:0;padding:10px 16px calc(10px + env(safe-area-inset-bottom));
+    background:linear-gradient(to top,var(--bg) 70%,transparent);
+  }
+  .sticky a{
+    display:flex;justify-content:center;align-items:center;gap:8px;max-width:448px;margin:0 auto;
+    background:var(--dark);color:#fff;text-decoration:none;border-radius:16px;padding:16px;font-size:17px;font-weight:800;
+    box-shadow:0 6px 20px rgba(27,31,42,.25);
+  }
+  .sticky a b{color:var(--accent)}
+</style>
+</head>
+<body>
+<main class="wrap">
+
+  <section class="profile">
+    <div class="avatar" aria-hidden="true">
+      <!-- 명함 로고 느낌의 실크해트 신사 실루엣 -->
+      <svg viewBox="0 0 56 80" fill="#f2a516">
+        <rect x="19" y="0" width="18" height="13" rx="1"/>
+        <rect x="14" y="12" width="28" height="3" rx="1.5"/>
+        <circle cx="28" cy="21" r="6"/>
+        <path d="M18 29h20l3 22-4 1-2-12-1 14 2 24h-5l-3-22-3 22h-5l2-24-1-14-2 12-4-1z"/>
+        <path d="M41 46l2 0 1 32h-2z"/>
+      </svg>
+    </div>
+    <h1>대구 키다리용달</h1>
+    <p class="tag">대구 젊은 아저씨 · 합리적인 가격으로 친절히 모시겠습니다</p>
+    <span class="car">🚚 리프트 장착 1톤 · 대구 82자 5572</span>
+  </section>
+
+  <div class="stats">
+    <div class="stat"><b><span class="star">★</span> 4.9</b><span>당근 평점</span></div>
+    <div class="stat"><b>615</b><span>당근 후기</span></div>
+    <div class="stat"><b>3,400</b><span>단골</span></div>
+  </div>
+  <p class="fine" style="text-align:center;margin-top:-4px">2026년 10월 당근 동네업체 기준</p>
+
+  <a class="btn primary" href="tel:01075748586">
+    <span class="ic">📞</span>
+    <span class="tx">전화 상담 · 견적<small>010-7574-8586 · 365일 · 심야 가능</small></span>
+    <span class="arr">›</span>
+  </a>
+  <a class="btn dark" href="sms:01075748586?body=%EC%95%88%EB%85%95%ED%95%98%EC%84%B8%EC%9A%94%20%EC%9A%A9%EB%8B%AC%20%EA%B2%AC%EC%A0%81%20%EB%AC%B8%EC%9D%98%EB%93%9C%EB%A6%BD%EB%8B%88%EB%8B%A4.%0A%EC%B6%9C%EB%B0%9C%EC%A7%80%3A%0A%EB%8F%84%EC%B0%A9%EC%A7%80%3A%0A%EB%82%A0%EC%A7%9C%3A%0A%EC%A7%90%3A">
+    <span class="ic">💬</span>
+    <span class="tx">문자로 견적 받기<small>출발지 · 도착지 · 날짜 · 짐 사진 보내 주세요</small></span>
+    <span class="arr">›</span>
+  </a>
+
+  <a class="btn" href="https://www.daangn.com/kr/local-profile/%ED%82%A4%EB%8B%A4%EB%A6%AC-%EC%9A%A9%EB%8B%AC-%EC%9D%B4%EC%82%AC-9n8oqn5vena9/" target="_blank" rel="noopener">
+    <span class="ic" style="background:#fff1e6">🥕</span>
+    <span class="tx">당근 동네업체<small>후기 615개 · 쿠폰 · 가격표</small></span>
+    <span class="arr">›</span>
+  </a>
+  <a class="btn" href="https://m.place.naver.com/place/1406183872/home" target="_blank" rel="noopener">
+    <span class="ic" style="background:#e7f8ee">📍</span>
+    <span class="tx">네이버 플레이스<small>대구 달서구 · 길찾기 · 리뷰</small></span>
+    <span class="arr">›</span>
+  </a>
+  <a class="btn" href="https://blog.naver.com/mildmanhan" target="_blank" rel="noopener">
+    <span class="ic" style="background:#e7f8ee">📝</span>
+    <span class="tx">네이버 블로그<small>작업 사진 · 이사 후기</small></span>
+    <span class="arr">›</span>
+  </a>
+  <a class="btn" href="https://www.youtube.com/channel/UCcY8BB3lDb2vaFfGlzks5gg" target="_blank" rel="noopener">
+    <span class="ic" style="background:#fdeaea">▶️</span>
+    <span class="tx">유튜브<small>작업 영상 보기</small></span>
+    <span class="arr">›</span>
+  </a>
+  <a class="btn" href="https://www.tiktok.com/@_mildmanhan" target="_blank" rel="noopener">
+    <span class="ic" style="background:#eef0f4">🎵</span>
+    <span class="tx">틱톡<small>@_mildmanhan</small></span>
+    <span class="arr">›</span>
+  </a>
+  <a class="btn" href="https://band.us/band/96919298" target="_blank" rel="noopener">
+    <span class="ic" style="background:#e9f7ec">👥</span>
+    <span class="tx">네이버 밴드<small>대구 키다리 용달 이사</small></span>
+    <span class="arr">›</span>
+  </a>
+
+  <section class="sec">
+    <h2>🛠 이런 일 합니다</h2>
+    <div class="chips">
+      <span class="chip">소형이사</span>
+      <span class="chip">원룸이사</span>
+      <span class="chip">개인용달·화물</span>
+      <span class="chip">가구/가전 분해조립</span>
+      <span class="chip">중고거래 운반</span>
+      <span class="chip">폐가구·에어컨 운반</span>
+      <span class="chip">짐 보관</span>
+      <span class="chip">가구 이동·재배치</span>
+    </div>
+    <div class="note">
+      ✔ 리프트 장착 차량 · 계단운반기 · 1톤 사다리 보유<br>
+      ✔ 냉장고·세탁기·워시타워 분해 조립 · 에어컨 해체<br>
+      ✔ 365일 · 심야 · 비 오는 날도 가능 · 인부 추가 가능
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2>💰 기본 가격</h2>
+    <div class="price">
+      <div class="row"><div><div class="n">단순 운송</div><div class="d">고객님이 직접 운반 · 5km 이내 단품</div></div><div class="p">3만원~</div></div>
+      <div class="row"><div><div class="n">기사도움 운반</div><div class="d">층수·엘리베이터 유무에 따라 견적</div></div><div class="p">4만원~</div></div>
+      <div class="row"><div><div class="n">원룸 차량만 이용</div><div class="d">한 차 가득 가능</div></div><div class="p">5만원~</div></div>
+      <div class="row"><div><div class="n">원룸 기사도움</div><div class="d">박스·테이프·장갑 기본 대여</div></div><div class="p">15만원~</div></div>
+      <div class="row"><div><div class="n">사다리 (편도)</div><div class="d">저층 원룸 기준</div></div><div class="p">10만원~</div></div>
+      <div class="row"><div><div class="n">인부 추가</div><div class="d">이사 시</div></div><div class="p">10만원~</div></div>
+    </div>
+    <p class="fine">2026년 10월 당근 동네업체에 올라온 가격 기준입니다. 정확한 금액은 전화·문자로 견적 받아 보세요.</p>
+  </section>
+
+  <section class="sec">
+    <h2>⭐ 손님 후기 <span style="font-weight:500;color:var(--sub);font-size:12px">당근 후기 615개 중 일부 발췌</span></h2>
+    <div class="rv">
+      <div class="top"><span>대구 달성군 옥포읍</span><span class="star">★★★★★</span></div>
+      <p>식탁세트랑 수납장 워시타워까지 옮겼는데 정말 만족스러웠어요. 특히 워시타워는 해체해서 안전하게 이동해주시고 다시 설치까지 깔끔하게 해주셨어요.</p>
+    </div>
+    <div class="rv">
+      <div class="top"><span>대구 달서구 대곡동</span><span class="star">★★★★★</span></div>
+      <p>친절하시고 빠르게 옮겨 주셨어요 ^^ 개인 사다리차 있으니 더 편리하더라구요.</p>
+    </div>
+    <div class="rv">
+      <div class="top"><span>대구 수성구 두산동</span><span class="star">★★★★★</span></div>
+      <p>친절하시구~ 하나하나 엄청 신경 써 주셔요~ 세심함까지 한 스푼 더 추가할게요~ 다음에 또 이용할게요.</p>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2>📍 위치 · 영업</h2>
+    <div class="price">
+      <div class="row"><div class="n">지역</div><div class="p" style="font-weight:600">대구 달서구 (대구 전역)</div></div>
+      <div class="row"><div class="n">운영</div><div class="p" style="font-weight:600">365일 · 심야 가능</div></div>
+      <div class="row"><div class="n">대표</div><div class="p" style="font-weight:600">한고명</div></div>
+    </div>
+  </section>
+
+  <footer>키다리용달 · 010-7574-8586</footer>
+</main>
+
+<div class="sticky"><a href="tel:01075748586">📞 지금 전화하기 <b>010-7574-8586</b></a></div>
+</body>
+</html>
