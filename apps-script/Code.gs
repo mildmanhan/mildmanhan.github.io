@@ -2,7 +2,8 @@
  * 키다리용달 링크 페이지 상담예약 백엔드 (Google Apps Script + 구글 시트)
  * 홍보 영상은 여기서 다루지 않고 GitHub 저장소의 videos.json + videos/ 폴더로 관리합니다.
  *
- * 스크립트 속성(프로젝트 설정 > 스크립트 속성)에 넣을 값
+ * 설정값: 스크립트 속성에 넣거나, 같은 프로젝트의 Secrets.gs에 SECRETS 객체로 둡니다 (속성이 우선).
+ * Secrets.gs는 비공개 Apps Script 프로젝트에만 두고 이 공개 저장소에는 올리지 않습니다.
  *   ADMIN_PASSWORD       관리자 페이지 비밀번호
  *   KAKAO_REST_KEY       카카오 디벨로퍼스 앱의 REST API 키
  *   KAKAO_CLIENT_SECRET  (선택) 카카오 앱에서 Client Secret을 '사용'으로 켰다면 그 코드
@@ -15,7 +16,15 @@ const SHEET_BOOKINGS = '예약';
 const PUBLIC_CACHE_KEY = 'public_v1';
 
 const props = () => PropertiesService.getScriptProperties();
-const siteUrl = () => props().getProperty('SITE_URL') || 'https://mildmanhan.github.io';
+const conf = k => props().getProperty(k) || (typeof SECRETS !== 'undefined' && SECRETS[k]) || null;
+const siteUrl = () => conf('SITE_URL') || 'https://mildmanhan.github.io';
+
+// 시트 탭이나 트리거가 없으면 알아서 만듦 (setup을 따로 실행하지 않아도 됨)
+function ensureSetup_() {
+  if (props().getProperty('SETUP_DONE')) return;
+  setup();
+  props().setProperty('SETUP_DONE', '1');
+}
 
 /* ───────── 최초 1회 실행: 시트 탭 + 매일 카카오 토큰 갱신 트리거 ───────── */
 function setup() {
@@ -40,6 +49,7 @@ function setup() {
 
 /* ───────── 웹앱 입구 ───────── */
 function doGet(e) {
+  ensureSetup_();
   const p = e.parameter || {};
   if (p.code || p.error) return kakaoCallback_(p);
   if (p.action === 'public') return json_(publicData_());
@@ -47,6 +57,7 @@ function doGet(e) {
 }
 
 function doPost(e) {
+  ensureSetup_();
   let body;
   try { body = JSON.parse(e.postData.contents); } catch (err) { return json_({ ok: false, error: '잘못된 요청' }); }
   try {
@@ -143,8 +154,8 @@ function checkPassword_(pw) {
   const cache = CacheService.getScriptCache();
   const fails = Number(cache.get('pw_fails') || 0);
   if (fails >= 10) throw new Error('비밀번호를 너무 많이 틀렸어요. 10분 뒤에 다시 시도해 주세요');
-  const real = props().getProperty('ADMIN_PASSWORD');
-  if (!real) throw new Error('스크립트 속성에 ADMIN_PASSWORD를 먼저 넣어 주세요');
+  const real = conf('ADMIN_PASSWORD');
+  if (!real) throw new Error('ADMIN_PASSWORD 설정이 없어요');
   if (String(pw || '') === real) return true;
   cache.put('pw_fails', String(fails + 1), 600);
   return false;
@@ -196,8 +207,8 @@ function setStatus_(b) {
 
 /* ───────── 카카오톡 나에게 보내기 ───────── */
 function kakaoAuthUrl_() {
-  const key = props().getProperty('KAKAO_REST_KEY');
-  if (!key) throw new Error('스크립트 속성에 KAKAO_REST_KEY를 먼저 넣어 주세요');
+  const key = conf('KAKAO_REST_KEY');
+  if (!key) throw new Error('카카오 REST API 키(KAKAO_REST_KEY) 설정이 아직 없어요');
   const state = Utilities.getUuid();
   CacheService.getScriptCache().put('kakao_state', state, 600);
   const url = 'https://kauth.kakao.com/oauth/authorize?response_type=code&scope=talk_message' +
@@ -225,8 +236,8 @@ function kakaoCallback_(p) {
 }
 
 function kakaoToken_(params) {
-  params.client_id = props().getProperty('KAKAO_REST_KEY');
-  const secret = props().getProperty('KAKAO_CLIENT_SECRET');
+  params.client_id = conf('KAKAO_REST_KEY');
+  const secret = conf('KAKAO_CLIENT_SECRET');
   if (secret) params.client_secret = secret;
   const r = UrlFetchApp.fetch('https://kauth.kakao.com/oauth/token', { method: 'post', payload: params, muteHttpExceptions: true });
   return JSON.parse(r.getContentText());
