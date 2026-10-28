@@ -108,28 +108,25 @@ function book_(b) {
   const times = Array.isArray(b.times) ? b.times.map(String) : [];
   if (!name) return { ok: false, error: '성함을 적어 주세요' };
   if (!/^01[0-9]{8,9}$/.test(phone)) return { ok: false, error: '휴대폰 번호를 확인해 주세요' };
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date < todayStr_()) return { ok: false, error: '날짜를 다시 골라 주세요' };
-  if (!times.length || times.length > 6) return { ok: false, error: '시간대를 1개 이상 골라 주세요' };
+  // 전화 상담 요청이라 365일 24시간 접수: 오늘~60일 안의 날짜, 정시 단위 시간대면 받음 (같은 시간 중복 허용)
+  const maxDate = Utilities.formatDate(new Date(Date.now() + 60 * 864e5), TZ, 'yyyy-MM-dd');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date < todayStr_() || date > maxDate) return { ok: false, error: '날짜를 다시 골라 주세요' };
+  if (!times.length || times.length > 24 || times.some(t => !/^([01]\d|2[0-3]):00$/.test(t))) {
+    return { ok: false, error: '시간대를 1개 이상 골라 주세요' };
+  }
 
   const lock = LockService.getScriptLock();
   lock.waitLock(10000);
   try {
-    const open = new Set(readRows_(SHEET_SLOTS).filter(r => cell_(r[0]) === date).map(r => cell_(r[1])));
-    const taken = takenSet_();
-    const bad = times.filter(t => !open.has(t) || taken.has(date + ' ' + t));
-    if (bad.length) {
-      clearPublicCache_();
-      return { ok: false, error: bad.join(', ') + ' 시간은 방금 마감되었어요. 다른 시간을 골라 주세요', refresh: true };
-    }
     times.sort();
     const id = Utilities.getUuid().slice(0, 8);
     const phoneFmt = phone.replace(/^(\d{3})(\d{3,4})(\d{4})$/, '$1-$2-$3');
     sheet_(SHEET_BOOKINGS).appendRow([id, nowStr_(), date, times.join(','), name, phoneFmt, memo, '접수']);
     clearPublicCache_();
 
-    const msg = '📅 새 상담예약\n' +
+    const msg = '📅 새 상담예약 (전화 요청)\n' +
       '날짜: ' + prettyDate_(date) + '\n' +
-      '시간: ' + times.join(', ') + '\n' +
+      '통화 희망: ' + hourRanges_(times) + '\n' +
       '이름: ' + name + '\n' +
       '연락처: ' + phoneFmt + (memo ? '\n내용: ' + memo : '');
     try { kakaoSend_(msg); } catch (err) { console.error('카카오 알림 실패', err); }
@@ -309,6 +306,19 @@ function cell_(v) {
 function clean_(v, max) {
   const s = String(v || '').replace(/[\u0000-\u0009\u000B-\u001F]/g, '').trim().slice(0, max);
   return /^[=+\-@]/.test(s) ? "'" + s : s;
+}
+
+// ['09:00','10:00','11:00','14:00'] → '9~12시, 14시' (카톡 200자 제한 때문에 연속 시간은 묶음)
+function hourRanges_(times) {
+  const hs = times.map(t => parseInt(t, 10)).sort((a, b) => a - b);
+  const out = [];
+  for (let i = 0; i < hs.length; i++) {
+    let j = i;
+    while (j + 1 < hs.length && hs[j + 1] === hs[j] + 1) j++;
+    out.push(i === j ? hs[i] + '시' : hs[i] + '~' + (hs[j] + 1) + '시');
+    i = j;
+  }
+  return out.join(', ');
 }
 
 function todayStr_() { return Utilities.formatDate(new Date(), TZ, 'yyyy-MM-dd'); }

@@ -131,7 +131,8 @@
   .times input:checked+span{background:var(--accent);border-color:var(--accent)}
   .times input:disabled+span{color:#b7b2a8;background:var(--chip);text-decoration:line-through;cursor:default}
   .times input:focus-visible+span{outline:2px solid var(--ink);outline-offset:1px}
-  .bk .hint{font-size:12px;color:var(--sub);margin-top:6px}
+  .bk .intro{font-size:14px;color:var(--sub);background:var(--chip);border-radius:12px;padding:12px;margin-bottom:14px;text-align:center}
+  .bk .intro b{color:var(--ink)}
   .bk button{width:100%;margin-top:16px;border:0;border-radius:14px;padding:15px;font:inherit;font-size:16px;font-weight:800;background:var(--dark);color:#fff;cursor:pointer}
   .bk button:disabled{opacity:.5;cursor:default}
   .bk .msg{margin-top:10px;font-size:14px;font-weight:600;text-align:center}
@@ -181,7 +182,7 @@
   </a>
   <a class="btn" href="#booking" id="bookBtn" hidden>
     <span class="ic" style="background:#fff4dc">📅</span>
-    <span class="tx">상담 예약하기<small>원하는 날짜 · 시간 고르면 사장님이 연락드려요</small></span>
+    <span class="tx">상담 예약하기<small>365일 24시간 접수 · 원하는 시간에 맞춰 전화드려요</small></span>
     <span class="arr">›</span>
   </a>
 
@@ -222,13 +223,13 @@
   </a>
 
   <section class="sec" id="booking" hidden>
-    <h2>📅 상담 예약</h2>
+    <h2>📅 상담 예약 <span style="font-weight:500;color:var(--sub);font-size:12px">365일 24시간 접수</span></h2>
     <form class="bk" id="bkForm" novalidate>
-      <label class="f" for="bkDate">날짜</label>
+      <p class="intro">통화 가능한 날짜와 시간을 남겨 주시면<br><b>최대한 시간 맞추어서 전화드리겠습니다.</b></p>
+      <label class="f" for="bkDate">통화 원하는 날짜</label>
       <select id="bkDate"></select>
-      <label class="f">원하는 시간대 <span style="font-weight:500;color:var(--sub)">(여러 개 선택 가능)</span></label>
+      <label class="f">통화 원하는 시간대 <span style="font-weight:500;color:var(--sub)">(여러 개 선택 가능)</span></label>
       <div class="times" id="bkTimes"></div>
-      <p class="hint">줄 그어진 시간은 이미 예약이 찼어요.</p>
       <label class="f" for="bkName">성함</label>
       <input id="bkName" autocomplete="name" maxlength="20" placeholder="홍길동">
       <label class="f" for="bkPhone">연락처</label>
@@ -236,7 +237,7 @@
       <label class="f" for="bkMemo">문의 내용 <span style="font-weight:500;color:var(--sub)">(선택)</span></label>
       <textarea id="bkMemo" maxlength="500" placeholder="예) 원룸 이사, 달서구 → 수성구, 냉장고·세탁기 있어요, 3층 엘베 없음"></textarea>
       <input class="hp" id="bkHp" tabindex="-1" autocomplete="off" aria-hidden="true">
-      <button type="submit" id="bkSubmit">예약 신청하기</button>
+      <button type="submit" id="bkSubmit">상담 예약하기</button>
       <p class="msg" id="bkMsg" role="status"></p>
     </form>
   </section>
@@ -374,80 +375,58 @@
 </script>
 
 <script>
-/* ── 상담 예약 (config.js에 백엔드 주소를 넣어야 나타남) ── */
+/* ── 상담 예약 (전화 요청): 365일 24시간 접수, 오늘부터 30일 중 날짜·시간대 선택 ── */
 (function () {
   var API = window.KIDARI_API;
   if (!API) return;
-  var CACHE = 'kidari_public';
+  var DAYS = 30;
   var $ = function (id) { return document.getElementById(id); };
-  var slots = {};
 
-  // 지난번 데이터로 먼저 그리고(빠르게), 서버에서 새로 받아 다시 그림
-  try { var c = JSON.parse(localStorage.getItem(CACHE)); if (c) renderSlots(c.slots || {}); } catch (e) {}
-  load();
-
-  function load() {
-    return fetch(API + '?action=public').then(function (r) { return r.json(); }).then(function (d) {
-      if (!d.ok) return;
-      renderSlots(d.slots || {});
-      try { localStorage.setItem(CACHE, JSON.stringify(d)); } catch (e) {}
-    }).catch(function () {});
-  }
-
-  /* ── 상담 예약 ── */
-  function today() {
-    var n = new Date(Date.now() + 9 * 3600e3); // 한국 시간
-    return n.toISOString().slice(0, 10);
-  }
+  function kst() { return new Date(Date.now() + 9 * 3600e3); } // 한국 시간 (UTC 메서드로 읽음)
+  function ymd(d) { return d.toISOString().slice(0, 10); }
   function pretty(d) {
     var p = d.split('-').map(Number);
     return p[1] + '월 ' + p[2] + '일 (' + '일월화수목금토'[new Date(p[0], p[1] - 1, p[2]).getDay()] + ')';
   }
 
-  function renderSlots(s) {
-    slots = {};
-    var t = today();
-    Object.keys(s).sort().forEach(function (d) { if (d >= t && s[d].length) slots[d] = s[d]; });
-    var dates = Object.keys(slots);
-    $('booking').hidden = $('bookBtn').hidden = !dates.length;
-    if (!dates.length) return;
-
+  function renderDates() {
     var sel = $('bkDate');
-    var prev = sel.value;
-    sel.innerHTML = '';
-    var first = '';
-    dates.forEach(function (d) {
-      var left = slots[d].filter(function (x) { return !x.taken; }).length;
+    var now = kst();
+    var start = now.getUTCHours() >= 23 ? 1 : 0; // 밤 11시 이후면 오늘은 고를 시간이 없음
+    for (var i = start; i < DAYS; i++) {
+      var d = ymd(new Date(now.getTime() + i * 864e5));
       var o = document.createElement('option');
       o.value = d;
-      o.textContent = pretty(d) + (left ? ' · ' + left + '개 가능' : ' · 마감');
-      o.disabled = !left;
-      if (left && !first) first = d;
+      o.textContent = pretty(d) + (i === 0 ? ' · 오늘' : i === 1 ? ' · 내일' : '');
       sel.appendChild(o);
-    });
-    sel.value = slots[prev] && slots[prev].some(function (x) { return !x.taken; }) ? prev : first;
-    renderTimes();
+    }
   }
 
   function renderTimes() {
     var box = $('bkTimes');
     var checked = Array.prototype.map.call(box.querySelectorAll('input:checked'), function (i) { return i.value; });
+    var now = kst();
+    var isToday = $('bkDate').value === ymd(now);
     box.innerHTML = '';
-    (slots[$('bkDate').value] || []).forEach(function (x) {
+    for (var h = 0; h < 24; h++) {
+      var t = (h < 10 ? '0' : '') + h + ':00';
       var l = document.createElement('label');
       var i = document.createElement('input');
       i.type = 'checkbox';
-      i.value = x.t;
-      i.disabled = x.taken;
-      i.checked = !x.taken && checked.indexOf(x.t) >= 0;
+      i.value = t;
+      i.disabled = isToday && h <= now.getUTCHours();
+      i.checked = !i.disabled && checked.indexOf(t) >= 0;
       var sp = document.createElement('span');
-      sp.textContent = x.t;
+      sp.textContent = t;
       l.append(i, sp);
       box.appendChild(l);
-    });
+    }
   }
 
-  $('bkDate').addEventListener('change', function () { $('bkTimes').innerHTML = ''; renderTimes(); });
+  renderDates();
+  renderTimes();
+  $('booking').hidden = $('bookBtn').hidden = false;
+  $('bkDate').addEventListener('change', renderTimes);
 
   $('bkPhone').addEventListener('input', function (e) {
     var n = e.target.value.replace(/\D/g, '').slice(0, 11);
@@ -477,17 +456,15 @@
       .then(function (r) { return r.json(); })
       .then(function (d) {
         if (d.ok) {
-          $('bkForm').innerHTML = '<div class="done"><b>✅ 예약 신청이 접수되었어요</b>' +
-            pretty(body.date) + ' ' + times.join(', ') + '<br>사장님이 확인 후 곧 연락드릴게요.<br>' +
+          $('bkForm').innerHTML = '<div class="done"><b>✅ 상담 예약이 접수되었어요</b>' +
+            pretty(body.date) + ' ' + times.join(', ') + '<br>남겨 주신 시간에 최대한 맞춰서 전화드리겠습니다.<br>' +
             '<span style="color:var(--sub);font-size:13px">급하시면 010-7574-8586 으로 전화 주세요.</span></div>';
-          try { localStorage.removeItem(CACHE); } catch (e2) {}
           return;
         }
         msg.textContent = d.error || '잠시 후 다시 시도해 주세요';
-        if (d.refresh) load();
       })
       .catch(function () { msg.textContent = '네트워크 오류예요. 잠시 후 다시 시도하시거나 전화 주세요.'; })
-      .finally(function () { btn.disabled = false; btn.textContent = '예약 신청하기'; });
+      .finally(function () { btn.disabled = false; btn.textContent = '상담 예약하기'; });
   });
 })();
 </script>

@@ -35,7 +35,7 @@
   .muted{color:var(--sub);font-size:13px}
   .err{color:var(--red);font-size:14px;font-weight:600;margin-top:8px}
 
-  .tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:16px 0 4px;position:sticky;top:0;background:var(--bg);padding:8px 0;z-index:5}
+  .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:16px 0 4px;position:sticky;top:0;background:var(--bg);padding:8px 0;z-index:5}
   .tabs button{background:var(--card);color:var(--ink);border:1px solid var(--line);padding:10px 0;font-size:14px;position:relative}
   .tabs button.on{background:var(--dark);color:#fff;border-color:var(--dark)}
   .badge{position:absolute;top:-6px;right:-4px;background:var(--red);color:#fff;font-size:11px;border-radius:999px;padding:1px 6px}
@@ -97,7 +97,7 @@
   <div id="app" hidden>
     <nav class="tabs">
       <button data-tab="bookings" class="on">예약 <span class="badge" id="newCount" hidden></span></button>
-      <button data-tab="slots">일정</button>
+      <button data-tab="slots" hidden>일정</button>
       <button data-tab="videos">영상</button>
       <button data-tab="kakao">카톡</button>
     </nav>
