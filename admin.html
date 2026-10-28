@@ -1,0 +1,616 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>키다리용달 관리자</title>
+<meta name="theme-color" content="#1b1f2a">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root{
+    --bg:#f3efe7; --card:#ffffff; --ink:#1b1f2a; --sub:#5d6270; --line:#e6e0d4;
+    --accent:#f2a516; --dark:#1b1f2a; --chip:#faf6ee; --red:#c0392b; --green:#1e8a4c;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{background:var(--bg);color:var(--ink);font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif;line-height:1.5;min-height:100vh}
+  .wrap{max-width:560px;margin:0 auto;padding:20px 16px 60px}
+  [hidden]{display:none!important}
+  h1{font-size:20px;font-weight:800;display:flex;align-items:center;justify-content:space-between;gap:8px}
+  h1 a{font-size:13px;font-weight:600;color:var(--sub)}
+  h2{font-size:15px;font-weight:800;margin:22px 2px 10px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:10px}
+  label.f{display:block;font-size:13px;font-weight:700;margin:12px 0 6px}
+  label.f:first-child{margin-top:0}
+  input,select,textarea{width:100%;font:inherit;font-size:16px;color:var(--ink);background:var(--chip);border:1px solid var(--line);border-radius:12px;padding:11px 12px;outline:none}
+  input:focus,select:focus{border-color:var(--accent)}
+  button{font:inherit;cursor:pointer;border:0;border-radius:12px;padding:11px 14px;font-weight:800;font-size:15px;background:var(--dark);color:#fff}
+  button.full{width:100%;margin-top:14px}
+  button.ghost{background:var(--chip);color:var(--ink);border:1px solid var(--line)}
+  button.sm{padding:7px 10px;font-size:13px;border-radius:10px}
+  button.acc{background:var(--accent);color:var(--ink)}
+  button.red{background:#fdeaea;color:var(--red)}
+  button:disabled{opacity:.5;cursor:default}
+  .muted{color:var(--sub);font-size:13px}
+  .err{color:var(--red);font-size:14px;font-weight:600;margin-top:8px}
+
+  .tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:16px 0 4px;position:sticky;top:0;background:var(--bg);padding:8px 0;z-index:5}
+  .tabs button{background:var(--card);color:var(--ink);border:1px solid var(--line);padding:10px 0;font-size:14px;position:relative}
+  .tabs button.on{background:var(--dark);color:#fff;border-color:var(--dark)}
+  .badge{position:absolute;top:-6px;right:-4px;background:var(--red);color:#fff;font-size:11px;border-radius:999px;padding:1px 6px}
+
+  /* 영상 */
+  .vrow{display:flex;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+  .vrow:first-child{border-top:0;padding-top:0}
+  .vrow img{width:54px;aspect-ratio:9/16;object-fit:cover;border-radius:8px;background:var(--dark);flex:none}
+  .vrow .t{flex:1;min-width:0;font-weight:700;font-size:14px}
+  .vrow .t a{display:block;font-weight:500;font-size:12px;color:var(--sub);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .vrow .b{display:flex;gap:4px;flex:none}
+
+  /* 일정 */
+  .tgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+  .tgrid button{background:var(--card);color:var(--ink);border:1px solid var(--line);padding:9px 0;font-size:14px}
+  .tgrid button.on{background:var(--accent);border-color:var(--accent)}
+  .quick{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+  .rep{display:flex;gap:6px;flex-wrap:wrap}
+  .rep label{flex:1;min-width:30%;position:relative}
+  .rep input{position:absolute;opacity:0}
+  .rep span{display:block;text-align:center;padding:9px 4px;border:1px solid var(--line);border-radius:10px;font-size:13px;font-weight:700;background:var(--card);cursor:pointer}
+  .rep input:checked+span{background:var(--dark);color:#fff;border-color:var(--dark)}
+  .drow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line);cursor:pointer}
+  .drow:first-child{border-top:0;padding-top:0}
+  .drow b{font-size:14px;white-space:nowrap}
+  .drow span{font-size:12px;color:var(--sub);text-align:right}
+
+  /* 예약 */
+  .filter{display:flex;gap:6px;margin-bottom:10px}
+  .bkc .top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+  .bkc .when{font-weight:800;font-size:16px}
+  .bkc .who{margin-top:4px;font-size:15px}
+  .bkc .who a{color:var(--ink);font-weight:700}
+  .bkc .memo{margin-top:8px;background:var(--chip);border-radius:10px;padding:10px;font-size:14px;white-space:pre-wrap;word-break:break-all}
+  .bkc .act{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+  .st{font-size:12px;font-weight:800;border-radius:999px;padding:3px 10px;white-space:nowrap}
+  .st.접수{background:#fff1d6;color:#8a5a00}
+  .st.확정{background:#e3effd;color:#1b5fb4}
+  .st.완료{background:#e4f5ea;color:var(--green)}
+  .st.취소{background:#eee;color:#888}
+
+  code{background:var(--chip);border:1px solid var(--line);border-radius:8px;padding:8px 10px;display:block;font-size:12px;word-break:break-all;margin-top:6px}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--dark);color:#fff;padding:12px 18px;border-radius:12px;font-weight:700;font-size:14px;z-index:20;max-width:90%}
+</style>
+<script src="config.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <h1>🔧 키다리용달 관리자 <a href="./">홈페이지 보기 ›</a></h1>
+
+  <!-- 로그인 -->
+  <form class="card" id="login" style="margin-top:16px">
+    <label class="f" for="pw">관리자 비밀번호</label>
+    <input id="pw" type="password" autocomplete="current-password">
+    <button class="full" id="loginBtn">로그인</button>
+    <p class="err" id="loginErr"></p>
+  </form>
+
+  <div id="app" hidden>
+    <nav class="tabs">
+      <button data-tab="bookings" class="on">예약 <span class="badge" id="newCount" hidden></span></button>
+      <button data-tab="slots">일정</button>
+      <button data-tab="videos">영상</button>
+      <button data-tab="kakao">카톡</button>
+    </nav>
+
+    <!-- 예약 목록 -->
+    <section data-pane="bookings">
+      <div class="filter">
+        <button class="sm" data-f="open">처리할 예약</button>
+        <button class="sm ghost" data-f="all">전체</button>
+      </div>
+      <div id="bkList"></div>
+    </section>
+
+    <!-- 예약 가능 일정 -->
+    <section data-pane="slots" hidden>
+      <div class="card">
+        <label class="f" for="sDate">날짜</label>
+        <input id="sDate" type="date">
+        <label class="f">손님이 고를 수 있는 시간</label>
+        <div class="quick">
+          <button class="sm ghost" data-q="am">오전</button>
+          <button class="sm ghost" data-q="pm">오후</button>
+          <button class="sm ghost" data-q="ev">저녁</button>
+          <button class="sm ghost" data-q="all">전부</button>
+          <button class="sm ghost" data-q="none">비우기</button>
+        </div>
+        <div class="tgrid" id="tgrid"></div>
+        <label class="f">적용 범위</label>
+        <div class="rep">
+          <label><input type="radio" name="rep" value="1" checked><span>이 날만</span></label>
+          <label><input type="radio" name="rep" value="w4"><span>4주간 같은 요일</span></label>
+          <label><input type="radio" name="rep" value="d7"><span>7일 연속</span></label>
+        </div>
+        <button class="full acc" id="saveSlots">저장</button>
+        <p class="muted" style="margin-top:8px">시간을 모두 비우고 저장하면 그 날은 예약을 받지 않아요.</p>
+      </div>
+      <h2>열려 있는 일정</h2>
+      <div class="card" id="slotList"></div>
+    </section>
+
+    <!-- 홍보 영상 -->
+    <section data-pane="videos" hidden>
+      <form class="card" id="ghForm">
+        <p style="font-weight:800" id="ghStatus"></p>
+        <p class="muted" style="margin-top:4px">영상은 GitHub 저장소에 바로 올라가요. 이 기기에서 처음 한 번만 GitHub 토큰을 넣으면 돼요 (SETUP.md 3번).</p>
+        <div id="ghIn">
+          <label class="f" for="ghTok">GitHub 토큰</label>
+          <input id="ghTok" type="password" autocomplete="off" placeholder="github_pat_…">
+          <button class="full">저장</button>
+        </div>
+        <button type="button" class="sm ghost" id="ghOut" style="margin-top:10px" hidden>토큰 지우기</button>
+      </form>
+      <form class="card" id="vForm">
+        <label class="f" for="vFile">영상 파일 (mp4, 세로 영상)</label>
+        <input id="vFile" type="file" accept="video/mp4,video/quicktime,video/*">
+        <video id="vPrev" muted playsinline style="display:none"></video>
+        <label class="f" for="vTitle">제목</label>
+        <input id="vTitle" maxlength="40" placeholder="예) 워시타워 분해·설치 현장">
+        <button class="full acc" id="vAdd">영상 올리기</button>
+        <p class="muted" style="margin-top:8px">새 영상은 맨 앞에 보여요. 올린 뒤 홈페이지에 나오기까지 1~2분 걸려요. 30초 영상은 10MB 이하면 재생이 가장 빨라요.</p>
+      </form>
+      <h2>홈페이지에 보이는 영상</h2>
+      <div class="card" id="vList"></div>
+    </section>
+
+    <!-- 카카오 -->
+    <section data-pane="kakao" hidden>
+      <div class="card">
+        <p style="font-weight:800" id="kStatus"></p>
+        <p class="muted" style="margin-top:4px">예약이 들어오면 연결한 카카오 계정의 '나와의 채팅'으로 알림이 와요.</p>
+        <button class="full acc" id="kConnect">카카오 연결하기</button>
+        <button class="full ghost" id="kTest">테스트 알림 보내기</button>
+      </div>
+      <div class="card">
+        <p style="font-weight:700;font-size:14px">카카오 디벨로퍼스에 등록할 Redirect URI</p>
+        <code id="kRedirect"></code>
+        <button class="sm ghost" id="kCopy" style="margin-top:8px">복사</button>
+      </div>
+    </section>
+  </div>
+</main>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function () {
+  var API = window.KIDARI_API;
+  var $ = function (id) { return document.getElementById(id); };
+  var pw = '';
+  var data = null;
+  var filter = 'open';
+  var HOURS = [];
+  for (var h = 7; h <= 21; h++) HOURS.push((h < 10 ? '0' : '') + h + ':00');
+  var picked = new Set();
+
+  setupVideos();
+  if (!API) {
+    // 예약 백엔드를 설정하기 전에는 영상 탭만 사용
+    $('login').hidden = true;
+    $('app').hidden = false;
+    document.querySelectorAll('.tabs button').forEach(function (b) {
+      b.hidden = b.dataset.tab !== 'videos';
+      b.classList.toggle('on', !b.hidden);
+    });
+    document.querySelectorAll('[data-pane]').forEach(function (p) { p.hidden = p.dataset.pane !== 'videos'; });
+    return;
+  }
+  try { pw = sessionStorage.getItem('kidari_pw') || ''; } catch (e) {}
+  if (pw) call('adminData').then(show).catch(function () { pw = ''; });
+
+  function call(action, extra) {
+    var body = Object.assign({ action: action, pw: pw }, extra || {});
+    return fetch(API, { method: 'POST', body: JSON.stringify(body) })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d.auth === false) { logout(); throw new Error(d.error); }
+        if (!d.ok) throw new Error(d.error || '오류');
+        return d;
+      });
+  }
+
+  function toast(t) {
+    var el = $('toast');
+    el.textContent = t;
+    el.hidden = false;
+    clearTimeout(toast.t);
+    toast.t = setTimeout(function () { el.hidden = true; }, 2200);
+  }
+  function fail(e) { toast('⚠️ ' + e.message); }
+
+  function logout() {
+    pw = '';
+    try { sessionStorage.removeItem('kidari_pw'); } catch (e) {}
+    $('app').hidden = true;
+    $('login').hidden = false;
+  }
+
+  $('login').addEventListener('submit', function (e) {
+    e.preventDefault();
+    pw = $('pw').value;
+    $('loginErr').textContent = '';
+    $('loginBtn').disabled = true;
+    call('adminData').then(function (d) {
+      try { sessionStorage.setItem('kidari_pw', pw); } catch (e2) {}
+      show(d);
+    }).catch(function (err) {
+      $('loginErr').textContent = err.message;
+    }).finally(function () { $('loginBtn').disabled = false; });
+  });
+
+  function show(d) {
+    data = d;
+    $('login').hidden = true;
+    $('app').hidden = false;
+    renderBookings();
+    renderSlotList();
+    renderKakao();
+    if (!$('sDate').value) { $('sDate').value = d.today; loadDate(); }
+  }
+
+  /* 탭 */
+  document.querySelectorAll('.tabs button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('.tabs button').forEach(function (x) { x.classList.toggle('on', x === b); });
+      document.querySelectorAll('[data-pane]').forEach(function (p) { p.hidden = p.dataset.pane !== b.dataset.tab; });
+      if (b.dataset.tab === 'bookings' && API) call('adminData').then(show).catch(fail);
+    });
+  });
+
+  function pretty(d) {
+    var p = d.split('-').map(Number);
+    return p[1] + '/' + p[2] + ' (' + '일월화수목금토'[new Date(p[0], p[1] - 1, p[2]).getDay()] + ')';
+  }
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+
+  /* ── 예약 목록 ── */
+  document.querySelectorAll('[data-f]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      filter = b.dataset.f;
+      document.querySelectorAll('[data-f]').forEach(function (x) { x.classList.toggle('ghost', x !== b); });
+      renderBookings();
+    });
+  });
+
+  function renderBookings() {
+    var all = data.bookings;
+    var n = all.filter(function (b) { return b.status === '접수'; }).length;
+    $('newCount').textContent = n;
+    $('newCount').hidden = !n;
+    var list = filter === 'open'
+      ? all.filter(function (b) { return (b.status === '접수' || b.status === '확정') && b.date >= data.today; })
+          .sort(function (a, b) { return (a.date + a.times).localeCompare(b.date + b.times); })
+      : all;
+    var box = $('bkList');
+    box.innerHTML = '';
+    if (!list.length) { box.appendChild(el('div', 'card muted', '예약이 없어요.')); return; }
+    list.forEach(function (b) {
+      var c = el('div', 'card bkc');
+      var top = el('div', 'top');
+      top.append(el('div', 'when', pretty(b.date) + '  ' + b.times.split(',').join(', ')), el('span', 'st ' + b.status, b.status));
+      var who = el('div', 'who');
+      who.append(document.createTextNode(b.name + ' · '));
+      var tel = el('a', null, b.phone);
+      tel.href = 'tel:' + b.phone.replace(/\D/g, '');
+      who.appendChild(tel);
+      c.append(top, who);
+      if (b.memo) c.appendChild(el('div', 'memo', b.memo));
+      c.appendChild(el('p', 'muted', '접수 ' + b.at));
+      var act = el('div', 'act');
+      [['확정', 'acc'], ['완료', 'ghost'], ['취소', 'red']].forEach(function (s) {
+        if (s[0] === b.status) return;
+        var btn = el('button', 'sm ' + s[1], s[0] === '취소' ? '취소 (시간 다시 열기)' : s[0]);
+        btn.addEventListener('click', function () {
+          if (s[0] === '취소' && !confirm(b.name + '님 예약을 취소할까요?')) return;
+          btn.disabled = true;
+          call('setStatus', { id: b.id, status: s[0] }).then(show).then(function () { toast(s[0] + ' 처리했어요'); }).catch(fail);
+        });
+        act.appendChild(btn);
+      });
+      var sms = el('button', 'sm ghost', '문자');
+      sms.addEventListener('click', function () {
+        location.href = 'sms:' + b.phone.replace(/\D/g, '') + '?body=' +
+          encodeURIComponent('안녕하세요 키다리용달입니다. ' + pretty(b.date) + ' 상담예약 확인드립니다.');
+      });
+      act.appendChild(sms);
+      c.appendChild(act);
+      box.appendChild(c);
+    });
+  }
+
+  /* ── 일정 ── */
+  var grid = $('tgrid');
+  HOURS.forEach(function (t) {
+    var b = el('button', null, t);
+    b.type = 'button';
+    b.addEventListener('click', function () { picked.has(t) ? picked.delete(t) : picked.add(t); paintGrid(); });
+    grid.appendChild(b);
+  });
+  function paintGrid() {
+    grid.querySelectorAll('button').forEach(function (b) { b.classList.toggle('on', picked.has(b.textContent)); });
+  }
+  document.querySelectorAll('[data-q]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var q = b.dataset.q;
+      if (q === 'none') picked.clear();
+      HOURS.forEach(function (t) {
+        var h = parseInt(t, 10);
+        if (q === 'all' || (q === 'am' && h < 12) || (q === 'pm' && h >= 12 && h < 18) || (q === 'ev' && h >= 18)) picked.add(t);
+      });
+      paintGrid();
+    });
+  });
+  function loadDate() {
+    picked = new Set((data && data.slots[$('sDate').value]) || []);
+    paintGrid();
+  }
+  $('sDate').addEventListener('change', loadDate);
+
+  function addDays(d, n) {
+    var p = d.split('-').map(Number);
+    var x = new Date(Date.UTC(p[0], p[1] - 1, p[2] + n));
+    return x.toISOString().slice(0, 10);
+  }
+  $('saveSlots').addEventListener('click', function () {
+    var d = $('sDate').value;
+    if (!d) return toast('날짜를 골라 주세요');
+    if (d < data.today) return toast('지난 날짜예요');
+    var rep = document.querySelector('[name=rep]:checked').value;
+    var dates = [d];
+    if (rep === 'w4') for (var i = 1; i < 4; i++) dates.push(addDays(d, 7 * i));
+    if (rep === 'd7') for (var j = 1; j < 7; j++) dates.push(addDays(d, j));
+    var btn = $('saveSlots');
+    btn.disabled = true;
+    call('setSlots', { dates: dates, times: Array.from(picked).sort() })
+      .then(show).then(function () { toast(dates.length + '일 일정을 저장했어요'); })
+      .catch(fail).finally(function () { btn.disabled = false; });
+  });
+
+  function renderSlotList() {
+    var box = $('slotList');
+    box.innerHTML = '';
+    var dates = Object.keys(data.slots).sort();
+    if (!dates.length) { box.appendChild(el('p', 'muted', '아직 열어 둔 일정이 없어요. 위에서 날짜와 시간을 고르고 저장하세요.')); return; }
+    var taken = {};
+    data.bookings.forEach(function (b) {
+      if (b.status !== '취소') b.times.split(',').forEach(function (t) { taken[b.date + ' ' + t] = 1; });
+    });
+    dates.forEach(function (d) {
+      var r = el('div', 'drow');
+      var ts = data.slots[d].slice().sort();
+      var full = ts.filter(function (t) { return taken[d + ' ' + t]; }).length;
+      r.append(el('b', null, pretty(d)), el('span', null, ts.join(' · ') + (full ? '  (예약 ' + full + ')' : '')));
+      r.addEventListener('click', function () { $('sDate').value = d; loadDate(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+      box.appendChild(r);
+    });
+  }
+
+  /* ── 영상: GitHub 저장소의 videos/ 폴더와 videos.json을 직접 고침 ── */
+  function setupVideos() {
+    var REPO = 'https://api.github.com/repos/mildmanhan/mildmanhan.github.io';
+    var BRANCH = 'main';
+    var MAX_MB = 50;
+    var tok = '';
+    var videos = [];
+    try { tok = localStorage.getItem('kidari_gh') || ''; } catch (e) {}
+
+    function gh(path, opt) {
+      opt = opt || {};
+      opt.headers = Object.assign({ Authorization: 'Bearer ' + tok, Accept: 'application/vnd.github+json' }, opt.headers || {});
+      if (opt.body && typeof opt.body !== 'string') opt.body = JSON.stringify(opt.body);
+      return fetch(REPO + path, opt).then(function (r) {
+        if (r.status === 401) throw new Error('GitHub 토큰이 맞지 않아요. 다시 넣어 주세요');
+        if (r.status === 403 || r.status === 404) throw new Error('토큰에 이 저장소 쓰기 권한(Contents: Read and write)이 없어요');
+        if (!r.ok) return r.text().then(function (t) { throw new Error('GitHub 오류 ' + r.status + ': ' + t.slice(0, 120)); });
+        return r.status === 204 ? null : r.json();
+      });
+    }
+
+    function paintGh() {
+      $('ghStatus').textContent = tok ? '✅ GitHub 연결됨' : '⚪ GitHub 토큰이 필요해요';
+      $('ghIn').hidden = !!tok;
+      $('ghOut').hidden = !tok;
+      $('vAdd').disabled = !tok;
+    }
+
+    // 목록은 토큰이 있으면 저장소 최신본, 없으면 공개된 사이트에서 읽음
+    function loadList() {
+      var p = tok
+        ? gh('/contents/videos.json?ref=' + BRANCH + '&t=' + Date.now(), { headers: { Accept: 'application/vnd.github.raw+json' } })
+        : fetch('videos.json', { cache: 'no-cache' }).then(function (r) { return r.json(); });
+      return p.then(function (list) { videos = list || []; renderVideos(); }).catch(function (e) {
+        if (tok) fail(e);
+      });
+    }
+
+    // 여러 파일 추가·삭제를 커밋 한 번으로 처리 (blob은 최대 100MB)
+    function commit(message, files) {
+      var base;
+      return gh('/git/ref/heads/' + BRANCH).then(function (ref) {
+        base = ref.object.sha;
+        return gh('/git/commits/' + base);
+      }).then(function (c) {
+        return Promise.all(files.map(function (f) {
+          if (f.base64 == null) return { path: f.path, mode: '100644', type: 'blob', sha: f.remove ? null : undefined, content: f.text };
+          return gh('/git/blobs', { method: 'POST', body: { content: f.base64, encoding: 'base64' } })
+            .then(function (b) { return { path: f.path, mode: '100644', type: 'blob', sha: b.sha }; });
+        })).then(function (tree) {
+          return gh('/git/trees', { method: 'POST', body: { base_tree: c.tree.sha, tree: tree } });
+        });
+      }).then(function (t) {
+        return gh('/git/commits', { method: 'POST', body: { message: message, tree: t.sha, parents: [base] } });
+      }).then(function (nc) {
+        return gh('/git/refs/heads/' + BRANCH, { method: 'PATCH', body: { sha: nc.sha } });
+      });
+    }
+
+    function listFile(list) {
+      return { path: 'videos.json', text: JSON.stringify(list, null, 2) + '\n' };
+    }
+
+    function toBase64(blob) {
+      return new Promise(function (ok, no) {
+        var r = new FileReader();
+        r.onload = function () { ok(String(r.result).split(',')[1]); };
+        r.onerror = no;
+        r.readAsDataURL(blob);
+      });
+    }
+
+    // 영상 1.5초 지점을 9:16 썸네일(jpg)로 만듦
+    function makePoster(file) {
+      return new Promise(function (ok, no) {
+        var v = $('vPrev');
+        v.src = URL.createObjectURL(file);
+        v.onloadedmetadata = function () { v.currentTime = Math.min(1.5, v.duration / 2); };
+        v.onseeked = function () {
+          var W = 360, H = 640, c = document.createElement('canvas');
+          c.width = W; c.height = H;
+          var s = Math.max(W / v.videoWidth, H / v.videoHeight);
+          var w = v.videoWidth * s, h = v.videoHeight * s;
+          c.getContext('2d').drawImage(v, (W - w) / 2, (H - h) / 2, w, h);
+          c.toBlob(function (b) { URL.revokeObjectURL(v.src); ok(b); }, 'image/jpeg', 0.82);
+        };
+        v.onerror = function () { no(new Error('이 영상 파일을 읽을 수 없어요. mp4로 저장해서 올려 주세요')); };
+      });
+    }
+
+    $('ghForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      tok = $('ghTok').value.trim();
+      if (!tok) return;
+      gh('').then(function (repo) {
+        if (!repo.permissions || !repo.permissions.push) throw new Error('토큰에 쓰기 권한이 없어요');
+        try { localStorage.setItem('kidari_gh', tok); } catch (e2) {}
+        $('ghTok').value = '';
+        paintGh();
+        loadList();
+        toast('GitHub 연결됐어요');
+      }).catch(function (err) { tok = ''; paintGh(); fail(err); });
+    });
+    $('ghOut').addEventListener('click', function () {
+      tok = '';
+      try { localStorage.removeItem('kidari_gh'); } catch (e) {}
+      paintGh();
+    });
+
+    $('vForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var file = $('vFile').files[0];
+      if (!file) return toast('영상 파일을 골라 주세요');
+      if (file.size > MAX_MB * 1048576) return toast(MAX_MB + 'MB 이하 파일만 올릴 수 있어요');
+      if (file.size > 15 * 1048576 && !confirm('파일이 ' + Math.round(file.size / 1048576) + 'MB라서 손님 휴대폰에서 늦게 열릴 수 있어요. 그래도 올릴까요?')) return;
+      var btn = $('vAdd');
+      var id = 'v' + Date.now().toString(36);
+      var title = $('vTitle').value.trim() || '홍보 영상';
+      btn.disabled = true;
+      btn.textContent = '올리는 중… (창을 닫지 마세요)';
+      makePoster(file).then(function (poster) {
+        return Promise.all([toBase64(file), toBase64(poster)]);
+      }).then(function (b64) {
+        var item = { id: id, title: title, src: 'videos/' + id + '.mp4', poster: 'videos/' + id + '.jpg' };
+        var next = [item].concat(videos);
+        return commit('Add video: ' + title, [
+          { path: item.src, base64: b64[0] },
+          { path: item.poster, base64: b64[1] },
+          listFile(next),
+        ]).then(function () { videos = next; });
+      }).then(function () {
+        $('vFile').value = $('vTitle').value = '';
+        renderVideos();
+        toast('올렸어요! 1~2분 뒤 홈페이지에 나와요');
+      }).catch(fail).finally(function () { btn.disabled = false; btn.textContent = '영상 올리기'; paintGh(); });
+    });
+
+    function save(message, next, extra) {
+      return commit(message, [listFile(next)].concat(extra || [])).then(function () {
+        videos = next;
+        renderVideos();
+      });
+    }
+
+    function renderVideos() {
+      var box = $('vList');
+      box.innerHTML = '';
+      if (!videos.length) { box.appendChild(el('p', 'muted', '아직 영상이 없어요.')); return; }
+      videos.forEach(function (v, i) {
+        var r = el('div', 'vrow');
+        var img = el('img');
+        img.src = v.poster || ('https://i.ytimg.com/vi/' + v.yt + '/hqdefault.jpg');
+        img.alt = '';
+        var t = el('div', 't', v.title);
+        var a = el('a', null, v.src || 'youtu.be/' + v.yt);
+        a.href = v.src || 'https://youtu.be/' + v.yt;
+        a.target = '_blank';
+        a.rel = 'noopener';
+        t.appendChild(a);
+        var b = el('div', 'b');
+        var move = function (dir) {
+          var next = videos.slice();
+          next.splice(i + dir, 0, next.splice(i, 1)[0]);
+          save('Reorder videos', next).then(function () { toast('순서를 바꿨어요'); }).catch(fail);
+        };
+        var up = el('button', 'sm ghost', '▲');
+        up.disabled = !tok || i === 0;
+        up.setAttribute('aria-label', '앞으로');
+        up.addEventListener('click', function () { move(-1); });
+        var dn = el('button', 'sm ghost', '▼');
+        dn.disabled = !tok || i === videos.length - 1;
+        dn.setAttribute('aria-label', '뒤로');
+        dn.addEventListener('click', function () { move(1); });
+        var del = el('button', 'sm red', '삭제');
+        del.disabled = !tok;
+        del.addEventListener('click', function () {
+          if (!confirm('"' + v.title + '" 영상을 홈페이지에서 뺄까요?')) return;
+          del.disabled = true;
+          var gone = [v.src, v.poster].filter(Boolean).map(function (p) { return { path: p, remove: true }; });
+          save('Remove video: ' + v.title, videos.filter(function (x) { return x !== v; }), gone)
+            .then(function () { toast('삭제했어요'); }).catch(fail);
+        });
+        b.append(up, dn, del);
+        r.append(img, t, b);
+        box.appendChild(r);
+      });
+    }
+
+    paintGh();
+    loadList();
+  }
+
+  /* ── 카카오 ── */
+  function renderKakao() {
+    $('kStatus').textContent = data.kakao.connected ? '✅ 카카오 알림 연결됨' : '⚪ 아직 연결 안 됨';
+    $('kRedirect').textContent = data.kakao.redirect;
+    $('kConnect').textContent = data.kakao.connected ? '다시 연결하기' : '카카오 연결하기';
+    $('kTest').disabled = !data.kakao.connected;
+  }
+  $('kConnect').addEventListener('click', function () {
+    var w = window.open('about:blank', '_blank'); // 팝업 차단을 피하려고 먼저 창을 엶
+    call('kakaoAuthUrl').then(function (d) {
+      if (w) w.location = d.url; else location.href = d.url;
+    }).catch(function (e) { if (w) w.close(); fail(e); });
+  });
+  $('kTest').addEventListener('click', function () {
+    call('kakaoTest').then(function () { toast('카톡을 확인해 보세요'); }).catch(fail);
+  });
+  $('kCopy').addEventListener('click', function () {
+    navigator.clipboard.writeText($('kRedirect').textContent).then(function () { toast('복사했어요'); });
+  });
+})();
+</script>
+</body>
+</html>

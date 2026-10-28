@@ -99,7 +99,47 @@
     box-shadow:0 6px 20px rgba(27,31,42,.25);
   }
   .sticky a b{color:var(--accent)}
+
+  /* 홍보 영상 */
+  .vids{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px;margin:0 -16px;padding-left:16px;padding-right:16px;scrollbar-width:none}
+  .vids::-webkit-scrollbar{display:none}
+  .vid{flex:none;width:62%;max-width:270px;scroll-snap-align:start}
+  .vid:only-child{width:100%;max-width:300px;margin:0 auto}
+  .vbox{position:relative;aspect-ratio:9/16;border-radius:16px;overflow:hidden;background:var(--dark);cursor:pointer}
+  .vbox img,.vbox iframe{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border:0}
+  .vbox .play{position:absolute;left:50%;top:50%;width:58px;height:58px;margin:-29px 0 0 -29px;border-radius:50%;
+              background:rgba(242,165,22,.95);display:grid;place-items:center;box-shadow:0 4px 16px rgba(0,0,0,.35)}
+  .vbox .play:after{content:"";border-left:18px solid var(--ink);border-top:11px solid transparent;border-bottom:11px solid transparent;margin-left:5px}
+  .vid p{font-size:13px;font-weight:700;margin:6px 4px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+  /* 상담 예약 */
+  .bk{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px}
+  .bk label.f{display:block;font-size:13px;font-weight:700;margin:14px 0 6px}
+  .bk label.f:first-child{margin-top:0}
+  .bk select,.bk input,.bk textarea{
+    width:100%;font:inherit;font-size:16px;color:var(--ink);background:var(--chip);
+    border:1px solid var(--line);border-radius:12px;padding:12px;outline:none;
+  }
+  .bk select:focus,.bk input:focus,.bk textarea:focus{border-color:var(--accent)}
+  .bk textarea{min-height:84px;resize:vertical}
+  .times{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+  .times label{position:relative}
+  .times input{position:absolute;opacity:0;pointer-events:none}
+  .times span{display:block;text-align:center;padding:10px 0;border:1px solid var(--line);border-radius:10px;font-size:14px;font-weight:700;background:var(--card);cursor:pointer}
+  .times input:checked+span{background:var(--accent);border-color:var(--accent)}
+  .times input:disabled+span{color:#b7b2a8;background:var(--chip);text-decoration:line-through;cursor:default}
+  .times input:focus-visible+span{outline:2px solid var(--ink);outline-offset:1px}
+  .bk .hint{font-size:12px;color:var(--sub);margin-top:6px}
+  .bk button{width:100%;margin-top:16px;border:0;border-radius:14px;padding:15px;font:inherit;font-size:16px;font-weight:800;background:var(--dark);color:#fff;cursor:pointer}
+  .bk button:disabled{opacity:.5;cursor:default}
+  .bk .msg{margin-top:10px;font-size:14px;font-weight:600;text-align:center}
+  .bk .msg.err{color:#c0392b}
+  .bk .done{text-align:center;padding:18px 4px}
+  .bk .done b{display:block;font-size:18px;margin-bottom:6px}
+  .hp{position:absolute;left:-9999px}
+  [hidden]{display:none!important}
 </style>
+<script src="config.js"></script>
 </head>
 <body>
 <main class="wrap">
@@ -137,6 +177,16 @@
     <span class="tx">문자로 견적 받기<small>품목 사진 · 날짜/시간 · 층수/엘베 · 이동거리 보내 주세요</small></span>
     <span class="arr">›</span>
   </a>
+  <a class="btn" href="#booking" id="bookBtn" hidden>
+    <span class="ic" style="background:#fff4dc">📅</span>
+    <span class="tx">상담 예약하기<small>원하는 날짜 · 시간 고르면 사장님이 연락드려요</small></span>
+    <span class="arr">›</span>
+  </a>
+
+  <section class="sec" id="videoSec" hidden>
+    <h2>🎬 홍보 영상</h2>
+    <div class="vids" id="vids"></div>
+  </section>
 
   <a class="btn" href="https://www.daangn.com/kr/local-profile/%ED%82%A4%EB%8B%A4%EB%A6%AC-%EC%9A%A9%EB%8B%AC-%EC%9D%B4%EC%82%AC-9n8oqn5vena9/" target="_blank" rel="noopener">
     <span class="ic" style="background:#fff1e6">🥕</span>
@@ -168,6 +218,26 @@
     <span class="tx">네이버 밴드<small>대구 키다리 용달 이사</small></span>
     <span class="arr">›</span>
   </a>
+
+  <section class="sec" id="booking" hidden>
+    <h2>📅 상담 예약</h2>
+    <form class="bk" id="bkForm" novalidate>
+      <label class="f" for="bkDate">날짜</label>
+      <select id="bkDate"></select>
+      <label class="f">원하는 시간대 <span style="font-weight:500;color:var(--sub)">(여러 개 선택 가능)</span></label>
+      <div class="times" id="bkTimes"></div>
+      <p class="hint">줄 그어진 시간은 이미 예약이 찼어요.</p>
+      <label class="f" for="bkName">성함</label>
+      <input id="bkName" autocomplete="name" maxlength="20" placeholder="홍길동">
+      <label class="f" for="bkPhone">연락처</label>
+      <input id="bkPhone" type="tel" inputmode="numeric" autocomplete="tel" maxlength="13" placeholder="010-0000-0000">
+      <label class="f" for="bkMemo">문의 내용 <span style="font-weight:500;color:var(--sub)">(선택)</span></label>
+      <textarea id="bkMemo" maxlength="500" placeholder="예) 원룸 이사, 달서구 → 수성구, 냉장고·세탁기 있어요, 3층 엘베 없음"></textarea>
+      <input class="hp" id="bkHp" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <button type="submit" id="bkSubmit">예약 신청하기</button>
+      <p class="msg" id="bkMsg" role="status"></p>
+    </form>
+  </section>
 
   <section class="sec">
     <h2>🛠 이런 일 합니다</h2>
@@ -234,5 +304,190 @@
 </main>
 
 <div class="sticky"><a href="tel:01075748586">📞 지금 전화하기 <b>010-7574-8586</b></a></div>
+
+<script>
+/* ── 홍보 영상: videos.json 목록을 읽어 썸네일을 먼저 보여 주고, 누르면 그 자리에서 재생 ── */
+(function () {
+  var box = document.getElementById('vids');
+  fetch('videos.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (list) {
+    list.forEach(function (v) {
+      var item = document.createElement('div');
+      item.className = 'vid';
+      var vb = document.createElement('div');
+      vb.className = 'vbox';
+      vb.setAttribute('role', 'button');
+      vb.setAttribute('tabindex', '0');
+      vb.setAttribute('aria-label', v.title + ' 재생');
+      var img = document.createElement('img');
+      img.src = v.poster || ('https://i.ytimg.com/vi/' + v.yt + '/hqdefault.jpg');
+      img.alt = '';
+      img.loading = 'lazy';
+      var play = document.createElement('span');
+      play.className = 'play';
+      vb.append(img, play);
+      // 손가락이 닿는 순간 앞부분을 미리 받아 두어 재생이 바로 시작되게 함
+      var warm = function () {
+        if (!v.src || vb.dataset.warm) return;
+        vb.dataset.warm = 1;
+        var l = document.createElement('link');
+        l.rel = 'preload'; l.as = 'video'; l.href = v.src;
+        document.head.appendChild(l);
+      };
+      vb.addEventListener('pointerenter', warm);
+      vb.addEventListener('touchstart', warm, { passive: true });
+      var start = function () {
+        if (vb.querySelector('video,iframe')) return;
+        var m;
+        if (v.src) {
+          m = document.createElement('video');
+          m.src = v.src;
+          m.poster = img.src;
+          m.controls = true;
+          m.playsInline = true;
+          m.setAttribute('playsinline', '');
+          m.addEventListener('play', function () {
+            document.querySelectorAll('#vids video').forEach(function (o) { if (o !== m) o.pause(); });
+          });
+        } else {
+          m = document.createElement('iframe');
+          m.src = 'https://www.youtube-nocookie.com/embed/' + v.yt + '?autoplay=1&playsinline=1&rel=0';
+          m.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+          m.allowFullscreen = true;
+        }
+        m.title = v.title;
+        vb.innerHTML = '';
+        vb.appendChild(m);
+        if (m.play) m.play().catch(function () {});
+      };
+      vb.addEventListener('click', start);
+      vb.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); start(); } });
+      var p = document.createElement('p');
+      p.textContent = v.title;
+      item.append(vb, p);
+      box.appendChild(item);
+    });
+    document.getElementById('videoSec').hidden = !list.length;
+  }).catch(function () {});
+})();
+</script>
+
+<script>
+/* ── 상담 예약 (config.js에 백엔드 주소를 넣어야 나타남) ── */
+(function () {
+  var API = window.KIDARI_API;
+  if (!API) return;
+  var CACHE = 'kidari_public';
+  var $ = function (id) { return document.getElementById(id); };
+  var slots = {};
+
+  // 지난번 데이터로 먼저 그리고(빠르게), 서버에서 새로 받아 다시 그림
+  try { var c = JSON.parse(localStorage.getItem(CACHE)); if (c) renderSlots(c.slots || {}); } catch (e) {}
+  load();
+
+  function load() {
+    return fetch(API + '?action=public').then(function (r) { return r.json(); }).then(function (d) {
+      if (!d.ok) return;
+      renderSlots(d.slots || {});
+      try { localStorage.setItem(CACHE, JSON.stringify(d)); } catch (e) {}
+    }).catch(function () {});
+  }
+
+  /* ── 상담 예약 ── */
+  function today() {
+    var n = new Date(Date.now() + 9 * 3600e3); // 한국 시간
+    return n.toISOString().slice(0, 10);
+  }
+  function pretty(d) {
+    var p = d.split('-').map(Number);
+    return p[1] + '월 ' + p[2] + '일 (' + '일월화수목금토'[new Date(p[0], p[1] - 1, p[2]).getDay()] + ')';
+  }
+
+  function renderSlots(s) {
+    slots = {};
+    var t = today();
+    Object.keys(s).sort().forEach(function (d) { if (d >= t && s[d].length) slots[d] = s[d]; });
+    var dates = Object.keys(slots);
+    $('booking').hidden = $('bookBtn').hidden = !dates.length;
+    if (!dates.length) return;
+
+    var sel = $('bkDate');
+    var prev = sel.value;
+    sel.innerHTML = '';
+    var first = '';
+    dates.forEach(function (d) {
+      var left = slots[d].filter(function (x) { return !x.taken; }).length;
+      var o = document.createElement('option');
+      o.value = d;
+      o.textContent = pretty(d) + (left ? ' · ' + left + '개 가능' : ' · 마감');
+      o.disabled = !left;
+      if (left && !first) first = d;
+      sel.appendChild(o);
+    });
+    sel.value = slots[prev] && slots[prev].some(function (x) { return !x.taken; }) ? prev : first;
+    renderTimes();
+  }
+
+  function renderTimes() {
+    var box = $('bkTimes');
+    var checked = Array.prototype.map.call(box.querySelectorAll('input:checked'), function (i) { return i.value; });
+    box.innerHTML = '';
+    (slots[$('bkDate').value] || []).forEach(function (x) {
+      var l = document.createElement('label');
+      var i = document.createElement('input');
+      i.type = 'checkbox';
+      i.value = x.t;
+      i.disabled = x.taken;
+      i.checked = !x.taken && checked.indexOf(x.t) >= 0;
+      var sp = document.createElement('span');
+      sp.textContent = x.t;
+      l.append(i, sp);
+      box.appendChild(l);
+    });
+  }
+
+  $('bkDate').addEventListener('change', function () { $('bkTimes').innerHTML = ''; renderTimes(); });
+
+  $('bkPhone').addEventListener('input', function (e) {
+    var n = e.target.value.replace(/\D/g, '').slice(0, 11);
+    e.target.value = n.length < 4 ? n : n.length < 8 ? n.slice(0, 3) + '-' + n.slice(3)
+      : n.slice(0, 3) + '-' + n.slice(3, n.length - 4) + '-' + n.slice(-4);
+  });
+
+  $('bkForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var msg = $('bkMsg');
+    var times = Array.prototype.map.call($('bkTimes').querySelectorAll('input:checked'), function (i) { return i.value; });
+    var body = {
+      action: 'book', date: $('bkDate').value, times: times,
+      name: $('bkName').value.trim(), phone: $('bkPhone').value, memo: $('bkMemo').value.trim(), hp: $('bkHp').value,
+    };
+    var err = !body.date ? '날짜를 골라 주세요' : !times.length ? '시간대를 1개 이상 골라 주세요'
+      : !body.name ? '성함을 적어 주세요' : !/^01\d{8,9}$/.test(body.phone.replace(/\D/g, '')) ? '휴대폰 번호를 확인해 주세요' : '';
+    msg.className = 'msg err';
+    msg.textContent = err;
+    if (err) return;
+
+    var btn = $('bkSubmit');
+    btn.disabled = true;
+    btn.textContent = '보내는 중…';
+    msg.textContent = '';
+    fetch(API, { method: 'POST', body: JSON.stringify(body) })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d.ok) {
+          $('bkForm').innerHTML = '<div class="done"><b>✅ 예약 신청이 접수되었어요</b>' +
+            pretty(body.date) + ' ' + times.join(', ') + '<br>사장님이 확인 후 곧 연락드릴게요.<br>' +
+            '<span style="color:var(--sub);font-size:13px">급하시면 010-7574-8586 으로 전화 주세요.</span></div>';
+          try { localStorage.removeItem(CACHE); } catch (e2) {}
+          return;
+        }
+        msg.textContent = d.error || '잠시 후 다시 시도해 주세요';
+        if (d.refresh) load();
+      })
+      .catch(function () { msg.textContent = '네트워크 오류예요. 잠시 후 다시 시도하시거나 전화 주세요.'; })
+      .finally(function () { btn.disabled = false; btn.textContent = '예약 신청하기'; });
+  });
+})();
+</script>
 </body>
 </html>
