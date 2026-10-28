@@ -121,7 +121,10 @@ function book_(b) {
     times.sort();
     const id = Utilities.getUuid().slice(0, 8);
     const phoneFmt = phone.replace(/^(\d{3})(\d{3,4})(\d{4})$/, '$1-$2-$3');
-    sheet_(SHEET_BOOKINGS).appendRow([id, nowStr_(), date, times.join(','), name, phoneFmt, memo, '접수']);
+    // appendRow는 '10:00'을 시각 값으로 바꿔 버리므로 텍스트 서식을 먼저 걸고 씀
+    const sh = sheet_(SHEET_BOOKINGS);
+    sh.getRange(sh.getLastRow() + 1, 1, 1, 8).setNumberFormat('@')
+      .setValues([[id, nowStr_(), date, times.join(','), name, phoneFmt, memo, '접수']]);
     clearPublicCache_();
 
     const msg = '📅 새 상담예약 (전화 요청)\n' +
