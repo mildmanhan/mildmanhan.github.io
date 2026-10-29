@@ -147,6 +147,16 @@
   .times input:checked+span{background:var(--accent);border-color:var(--accent)}
   .times input:disabled+span{color:#b7b2a8;background:var(--chip);text-decoration:line-through;cursor:default}
   .times input:focus-visible+span{outline:2px solid var(--ink);outline-offset:1px}
+  /* 시간대: 접어 두었다가 눌러서 펼침 */
+  .tpick{border:1px solid var(--line);border-radius:12px;background:var(--chip)}
+  .tpick summary{list-style:none;display:flex;justify-content:space-between;align-items:center;gap:8px;
+    padding:12px;font-size:16px;cursor:pointer;color:var(--sub)}
+  .tpick summary::-webkit-details-marker{display:none}
+  .tpick summary.on{color:var(--ink);font-weight:700}
+  .tpick .chev{transition:transform .15s ease;color:var(--sub)}
+  .tpick[open] .chev{transform:rotate(180deg)}
+  .tpick #bkTimes{padding:0 10px 12px}
+  .tpick .tg{font-size:12px;font-weight:700;color:var(--sub);margin:8px 2px 6px}
   .bk .intro{font-size:14px;color:var(--sub);background:var(--chip);border-radius:12px;padding:12px;margin-bottom:14px;text-align:center}
   .bk .intro b{color:var(--ink)}
   .bk button{width:100%;margin-top:16px;border:0;border-radius:14px;padding:15px;font:inherit;font-size:16px;font-weight:800;background:var(--dark);color:#fff;cursor:pointer}
@@ -248,7 +258,10 @@
       <label class="f" for="bkDate">통화 원하는 날짜</label>
       <select id="bkDate"></select>
       <label class="f">통화 원하는 시간대 <span style="font-weight:500;color:var(--sub)">(여러 개 선택 가능)</span></label>
-      <div class="times" id="bkTimes"></div>
+      <details class="tpick" id="bkPick">
+        <summary><span id="bkSel">시간 선택하기</span><span class="chev" aria-hidden="true">▾</span></summary>
+        <div id="bkTimes"></div>
+      </details>
       <label class="f" for="bkName">성함</label>
       <input id="bkName" autocomplete="name" maxlength="20" placeholder="홍길동">
       <label class="f" for="bkPhone">연락처</label>
@@ -399,6 +412,7 @@
   var API = window.KIDARI_API;
   if (!API) return;
   var DAYS = 30;
+  var LAST_H = 20; // 마지막 선택 가능 시간 20:00
   var $ = function (id) { return document.getElementById(id); };
 
   function kst() { return new Date(Date.now() + 9 * 3600e3); } // 한국 시간 (UTC 메서드로 읽음)
@@ -411,7 +425,7 @@
   function renderDates() {
     var sel = $('bkDate');
     var now = kst();
-    var start = now.getUTCHours() >= 23 ? 1 : 0; // 밤 11시 이후면 오늘은 고를 시간이 없음
+    var start = now.getUTCHours() >= LAST_H ? 1 : 0; // 저녁 8시가 지나면 오늘은 고를 시간이 없음
     for (var i = start; i < DAYS; i++) {
       var d = ymd(new Date(now.getTime() + i * 864e5));
       var o = document.createElement('option');
@@ -421,31 +435,57 @@
     }
   }
 
+  // 06:00 ~ 20:00, 30분 간격을 오전·오후·저녁으로 묶어 보여 줌
+  var GROUPS = [['오전', 6, 12], ['오후', 12, 18], ['저녁', 18, LAST_H + 0.5]];
+
+  function picked() {
+    return Array.prototype.map.call($('bkTimes').querySelectorAll('input:checked'), function (i) { return i.value; });
+  }
+
   function renderTimes() {
     var box = $('bkTimes');
-    var checked = Array.prototype.map.call(box.querySelectorAll('input:checked'), function (i) { return i.value; });
+    var checked = picked();
     var now = kst();
+    var nowMin = now.getUTCHours() * 60 + now.getUTCMinutes();
     var isToday = $('bkDate').value === ymd(now);
     box.innerHTML = '';
-    for (var h = 0; h < 24; h++) {
-      var t = (h < 10 ? '0' : '') + h + ':00';
-      var l = document.createElement('label');
-      var i = document.createElement('input');
-      i.type = 'checkbox';
-      i.value = t;
-      i.disabled = isToday && h <= now.getUTCHours();
-      i.checked = !i.disabled && checked.indexOf(t) >= 0;
-      var sp = document.createElement('span');
-      sp.textContent = t;
-      l.append(i, sp);
-      box.appendChild(l);
-    }
+    GROUPS.forEach(function (g) {
+      var title = document.createElement('p');
+      title.className = 'tg';
+      title.textContent = g[0];
+      var grid = document.createElement('div');
+      grid.className = 'times';
+      for (var m = g[1] * 60; m < g[2] * 60; m += 30) {
+        var t = (m < 600 ? '0' : '') + Math.floor(m / 60) + ':' + (m % 60 ? '30' : '00');
+        var l = document.createElement('label');
+        var i = document.createElement('input');
+        i.type = 'checkbox';
+        i.value = t;
+        i.disabled = isToday && m <= nowMin;
+        i.checked = !i.disabled && checked.indexOf(t) >= 0;
+        var sp = document.createElement('span');
+        sp.textContent = t;
+        l.append(i, sp);
+        grid.appendChild(l);
+      }
+      box.append(title, grid);
+    });
+    paintSel();
+  }
+
+  // 접힌 상태에서도 고른 시간이 보이게
+  function paintSel() {
+    var t = picked();
+    var s = $('bkSel');
+    s.textContent = !t.length ? '시간 선택하기' : '선택: ' + (t.length > 4 ? t.slice(0, 3).join(', ') + ' 외 ' + (t.length - 3) + '개' : t.join(', '));
+    s.parentNode.classList.toggle('on', t.length > 0);
   }
 
   renderDates();
   renderTimes();
   $('booking').hidden = $('bookBtn').hidden = false;
   $('bkDate').addEventListener('change', renderTimes);
+  $('bkTimes').addEventListener('change', paintSel);
 
   $('bkPhone').addEventListener('input', function (e) {
     var n = e.target.value.replace(/\D/g, '').slice(0, 11);
@@ -456,7 +496,8 @@
   $('bkForm').addEventListener('submit', function (e) {
     e.preventDefault();
     var msg = $('bkMsg');
-    var times = Array.prototype.map.call($('bkTimes').querySelectorAll('input:checked'), function (i) { return i.value; });
+    var times = picked();
+    if (!times.length) $('bkPick').open = true;
     var body = {
       action: 'book', date: $('bkDate').value, times: times,
       name: $('bkName').value.trim(), phone: $('bkPhone').value, memo: $('bkMemo').value.trim(), hp: $('bkHp').value,

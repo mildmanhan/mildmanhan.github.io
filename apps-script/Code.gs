@@ -111,7 +111,7 @@ function book_(b) {
   // 전화 상담 요청이라 365일 24시간 접수: 오늘~60일 안의 날짜, 정시 단위 시간대면 받음 (같은 시간 중복 허용)
   const maxDate = Utilities.formatDate(new Date(Date.now() + 60 * 864e5), TZ, 'yyyy-MM-dd');
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date < todayStr_() || date > maxDate) return { ok: false, error: '날짜를 다시 골라 주세요' };
-  if (!times.length || times.length > 24 || times.some(t => !/^([01]\d|2[0-3]):00$/.test(t))) {
+  if (!times.length || times.length > 29 || times.some(t => !/^(0[6-9]|1\d):[03]0$|^20:00$/.test(t))) {
     return { ok: false, error: '시간대를 1개 이상 골라 주세요' };
   }
 
@@ -311,14 +311,15 @@ function clean_(v, max) {
   return /^[=+\-@]/.test(s) ? "'" + s : s;
 }
 
-// ['09:00','10:00','11:00','14:00'] → '9~12시, 14시' (카톡 200자 제한 때문에 연속 시간은 묶음)
+// 30분 칸 ['09:00','09:30','10:00','14:30'] → '9:00~10:30, 14:30' (카톡 200자 제한 때문에 연속 칸은 묶음)
 function hourRanges_(times) {
-  const hs = times.map(t => parseInt(t, 10)).sort((a, b) => a - b);
+  const ms = times.map(t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; }).sort((a, b) => a - b);
+  const fmt = m => Math.floor(m / 60) + ':' + (m % 60 ? '30' : '00');
   const out = [];
-  for (let i = 0; i < hs.length; i++) {
+  for (let i = 0; i < ms.length; i++) {
     let j = i;
-    while (j + 1 < hs.length && hs[j + 1] === hs[j] + 1) j++;
-    out.push(i === j ? hs[i] + '시' : hs[i] + '~' + (hs[j] + 1) + '시');
+    while (j + 1 < ms.length && ms[j + 1] === ms[j] + 30) j++;
+    out.push(i === j ? fmt(ms[i]) : fmt(ms[i]) + '~' + fmt(ms[j] + 30));
     i = j;
   }
   return out.join(', ');
