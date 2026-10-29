@@ -1,5 +1,26 @@
 [
-  { "id": "estimate-30s", "title": "이사 끝나고 돈 더 달라고 하면?", "src": "videos/estimate-30s.mp4", "poster": "videos/estimate-30s.jpg" },
-  { "id": "sofa-28s", "title": "이 소파, 어떻게 빼죠?", "src": "videos/sofa-28s.mp4", "poster": "videos/sofa-28s.jpg" },
-  { "id": "screw-10s", "title": "가구 조립, 나사가 남았다", "src": "videos/screw-10s.mp4", "poster": "videos/screw-10s.jpg" }
+  {
+    "id": "boss-30s",
+    "title": "우리집 사장님은 따로 있어요",
+    "src": "videos/boss-30s.mp4",
+    "poster": "videos/boss-30s.jpg"
+  },
+  {
+    "id": "estimate-30s",
+    "title": "이사 끝나고 돈 더 달라고 하면?",
+    "src": "videos/estimate-30s.mp4",
+    "poster": "videos/estimate-30s.jpg"
+  },
+  {
+    "id": "sofa-28s",
+    "title": "이 소파, 어떻게 빼죠?",
+    "src": "videos/sofa-28s.mp4",
+    "poster": "videos/sofa-28s.jpg"
+  },
+  {
+    "id": "screw-10s",
+    "title": "가구 조립, 나사가 남았다",
+    "src": "videos/screw-10s.mp4",
+    "poster": "videos/screw-10s.jpg"
+  }
 ]
