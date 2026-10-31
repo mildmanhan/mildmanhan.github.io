@@ -166,6 +166,19 @@
   .bk .done{text-align:center;padding:18px 4px}
   .bk .done b{display:block;font-size:18px;margin-bottom:6px}
   .hp{position:absolute;left:-9999px}
+
+  /* 배경 음악 켜기/끄기 */
+  .bgm{position:fixed;top:calc(12px + env(safe-area-inset-top));right:12px;z-index:10;
+    display:flex;align-items:center;gap:6px;border:0;border-radius:999px;padding:8px 13px;
+    background:var(--dark);color:#fff;font:inherit;font-size:13px;font-weight:700;cursor:pointer;
+    box-shadow:0 4px 14px rgba(27,31,42,.25)}
+  .bgm .eq{display:flex;align-items:flex-end;gap:2px;height:12px}
+  .bgm .eq i{width:3px;height:4px;background:var(--accent);border-radius:1px}
+  .bgm.on .eq i{animation:eq .8s ease-in-out infinite alternate}
+  .bgm.on .eq i:nth-child(2){animation-delay:.2s}
+  .bgm.on .eq i:nth-child(3){animation-delay:.4s}
+  @keyframes eq{to{height:12px}}
+  @media (prefers-reduced-motion:reduce){.bgm.on .eq i{animation:none;height:9px}}
   [hidden]{display:none!important}
 </style>
 <script src="config.js?v=2"></script>
@@ -355,6 +368,64 @@
 </main>
 
 <div class="sticky"><a href="tel:01075748586">📞 지금 전화하기 <b>010-7574-8586</b></a></div>
+
+<audio id="bgmAudio" src="audio/kidari.mp3" preload="auto"></audio>
+<button class="bgm" id="bgmBtn" type="button" aria-pressed="false"><span class="eq" aria-hidden="true"><i></i><i></i><i></i></span><span id="bgmTx">음악 켜기</span></button>
+
+<script>
+/* ── 배경 음악: 들어오면 바로 재생 시도. 브라우저가 소리 자동재생을 막으면
+      손님이 화면을 처음 누르는 순간 재생. 오른쪽 위 버튼으로 끄고 켬. 홍보 영상을 틀면 멈춤 ── */
+(function () {
+  var a = document.getElementById('bgmAudio');
+  var btn = document.getElementById('bgmBtn');
+  var tx = document.getElementById('bgmTx');
+  var off = false;
+  try { off = localStorage.getItem('kd_bgm') === 'off'; } catch (e) {}
+  a.volume = 0.6;
+
+  function paint() {
+    var on = !a.paused;
+    btn.classList.toggle('on', on);
+    btn.setAttribute('aria-pressed', on);
+    tx.textContent = on ? '음악 끄기' : '음악 켜기';
+  }
+  a.addEventListener('play', paint);
+  a.addEventListener('pause', paint);
+  a.addEventListener('ended', paint);
+
+  var EV = ['pointerdown', 'touchstart', 'keydown'];
+  function unlock(e) {
+    // 음악 버튼은 자기 동작대로, 홍보 영상을 누른 거면 음악 없이 영상만
+    if (btn.contains(e.target)) return;
+    if (document.getElementById('vids').contains(e.target)) { stopWaiting(); return; }
+    stopWaiting();
+    a.play().catch(function () {});
+  }
+  function stopWaiting() { EV.forEach(function (n) { document.removeEventListener(n, unlock, true); }); }
+
+  if (!off) {
+    a.play().catch(function () {
+      EV.forEach(function (n) { document.addEventListener(n, unlock, { capture: true, passive: true }); });
+    });
+  }
+
+  btn.addEventListener('click', function () {
+    stopWaiting();
+    if (a.paused) {
+      if (a.ended) a.currentTime = 0;
+      a.play().catch(function () {});
+      try { localStorage.removeItem('kd_bgm'); } catch (e) {}
+    } else {
+      a.pause();
+      try { localStorage.setItem('kd_bgm', 'off'); } catch (e) {}
+    }
+  });
+
+  // 홍보 영상이 재생되면 음악은 멈춤
+  document.addEventListener('play', function (e) { if (e.target !== a) a.pause(); }, true);
+  document.getElementById('vids').addEventListener('click', function () { stopWaiting(); a.pause(); }, true);
+})();
+</script>
 
 <script>
 /* ── 홍보 영상: videos.json 목록을 읽어 썸네일을 먼저 보여 주고, 누르면 그 자리에서 재생 ── */
