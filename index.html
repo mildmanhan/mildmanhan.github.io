@@ -267,7 +267,23 @@
       <label class="f" for="bkPhone">연락처</label>
       <input id="bkPhone" type="tel" inputmode="numeric" autocomplete="tel" maxlength="13" placeholder="010-0000-0000">
       <label class="f" for="bkMemo">문의 내용 <span style="font-weight:500;color:var(--sub)">(선택)</span></label>
-      <textarea id="bkMemo" maxlength="500" placeholder="예) 원룸 이사, 달서구 → 수성구, 냉장고·세탁기 있어요, 3층 엘베 없음"></textarea>
+      <textarea id="bkMemo" maxlength="470" placeholder="예) 원룸 이사, 달서구 → 수성구, 냉장고·세탁기 있어요, 3층 엘베 없음"></textarea>
+      <label class="f" for="bkSrc">어디서 보고 오셨어요? <span style="font-weight:500;color:var(--sub)">(선택)</span></label>
+      <select id="bkSrc">
+        <option value="">선택 안 함</option>
+        <option>네이버 블로그</option>
+        <option>네이버 지도</option>
+        <option>당근</option>
+        <option>인스타그램</option>
+        <option>유튜브</option>
+        <option>틱톡</option>
+        <option>페이스북</option>
+        <option>스레드</option>
+        <option>밴드</option>
+        <option>지인 소개</option>
+        <option>차량·명함</option>
+        <option>기타</option>
+      </select>
       <input class="hp" id="bkHp" tabindex="-1" autocomplete="off" aria-hidden="true">
       <button type="submit" id="bkSubmit">상담 예약하기</button>
       <p class="msg" id="bkMsg" role="status"></p>
@@ -493,14 +509,36 @@
       : n.slice(0, 3) + '-' + n.slice(3, n.length - 4) + '-' + n.slice(-4);
   });
 
+  // 손님이 어디서 들어왔는지: SNS 글 링크의 ?from= 표시 → 없으면 이전 페이지 주소로 짐작.
+  // 처음 들어온 경로를 30일 동안 기억해서 예약 칸에 미리 골라 둔다 (손님이 바꿀 수 있음)
+  var SRC = { blog: '네이버 블로그', place: '네이버 지도', dg: '당근', ig: '인스타그램', yt: '유튜브', tt: '틱톡',
+    fb: '페이스북', th: '스레드', band: '밴드', card: '차량·명함' };
+  var REF = [[/blog\.naver/, 'blog'], [/map\.naver|place\.naver/, 'place'], [/daangn|karrot/, 'dg'], [/instagram/, 'ig'],
+    [/youtube|youtu\.be/, 'yt'], [/tiktok/, 'tt'], [/facebook|fb\.com/, 'fb'], [/threads/, 'th'], [/band\.us/, 'band']];
+  (function () {
+    var q = new URLSearchParams(location.search);
+    var code = q.get('from') || q.get('utm_source') || '';
+    if (!SRC[code]) { code = ''; REF.forEach(function (r) { if (!code && r[0].test(document.referrer)) code = r[1]; }); }
+    var saved = null;
+    try { saved = JSON.parse(localStorage.getItem('kd_src') || 'null'); } catch (e) {}
+    if (saved && Date.now() - saved.at > 30 * 864e5) saved = null;
+    if (code && !saved) { saved = { v: code, at: Date.now() }; try { localStorage.setItem('kd_src', JSON.stringify(saved)); } catch (e) {} }
+    var pick = saved ? SRC[saved.v] : (code ? SRC[code] : '');
+    if (pick) $('bkSrc').value = pick;
+  })();
+
   $('bkForm').addEventListener('submit', function (e) {
     e.preventDefault();
     var msg = $('bkMsg');
     var times = picked();
     if (!times.length) $('bkPick').open = true;
+    var src = $('bkSrc').value;
+    var memo = $('bkMemo').value.trim();
     var body = {
       action: 'book', date: $('bkDate').value, times: times,
-      name: $('bkName').value.trim(), phone: $('bkPhone').value, memo: $('bkMemo').value.trim(), hp: $('bkHp').value,
+      name: $('bkName').value.trim(), phone: $('bkPhone').value, hp: $('bkHp').value,
+      // 예약 시스템은 그대로 두고, 유입 경로를 문의 내용 맨 앞에 붙여 카톡 알림에서 바로 보이게 한다
+      memo: ((src ? '[유입: ' + src + '] ' : '') + memo).slice(0, 500),
     };
     var err = !body.date ? '날짜를 골라 주세요' : !times.length ? '시간대를 1개 이상 골라 주세요'
       : !body.name ? '성함을 적어 주세요' : !/^01\d{8,9}$/.test(body.phone.replace(/\D/g, '')) ? '휴대폰 번호를 확인해 주세요' : '';
