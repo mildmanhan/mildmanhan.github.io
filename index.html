@@ -393,7 +393,8 @@
   a.addEventListener('pause', paint);
   a.addEventListener('ended', paint);
 
-  var EV = ['pointerdown', 'touchstart', 'keydown'];
+  // 브라우저가 '손님이 직접 눌렀다'고 인정하는 이벤트 전부 (휴대폰은 손을 뗄 때 인정되기도 함)
+  var EV = ['pointerdown', 'mousedown', 'touchstart', 'pointerup', 'touchend', 'click', 'keydown'];
   function unlock(e) {
     // 음악 버튼은 자기 동작대로, 홍보 영상을 누른 거면 음악 없이 영상만
     if (btn.contains(e.target)) return;
